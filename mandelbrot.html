@@ -1,0 +1,55 @@
+<html>
+<head>
+<script type="text/javascript">
+var windowSize = {minX: -1.5, maxX: 0.5, minY: -1, maxY: 1};
+var maxIter = 100;
+var canvas;
+var ctx;
+
+function drawMandelbrot() {
+	let coordX, coordY, real, imag, iter;
+	for(let j=0; j<canvas.height; j++) {
+		for(let i=0; i<canvas.width; i++) {
+			coordX = windowSize.minX + (i/canvas.width)*(windowSize.maxX - windowSize.minX);
+			coordY = windowSize.maxY - (j/canvas.height)*(windowSize.maxY - windowSize.minY);
+			real = (x,y) => x*x-y*y+coordX;
+			imag = (x,y) => 2*x*y+coordY;
+			iter = 0;
+			[iterX, iterY] = [0, 0];
+			
+			while(Math.pow(real(iterX,iterY),2) + Math.pow(imag(iterX,iterY),2) <= 4 && iter < maxIter) {
+				[iterX, iterY] = [real(iterX,iterY), imag(iterX,iterY)];
+				iter++;
+			}
+			ctx.fillStyle = iter==maxIter ? "#000000" : "#" + (100-Math.floor(100*iter/maxIter)) + "0000";
+			ctx.fillRect(i,j,1,1);
+		}
+	}
+}
+
+function zoom(x, y, magn = 2) {
+	let coordX = windowSize.minX + (x/canvas.width)*(windowSize.maxX - windowSize.minX);
+	let coordY = windowSize.maxY - (y/canvas.height)*(windowSize.maxY - windowSize.minY);
+
+	let sizeX = (windowSize.maxX - windowSize.minX) / magn;
+	let sizeY = (windowSize.maxY - windowSize.minY) / magn;
+	
+	windowSize = {minX: coordX - sizeX / 2,
+	maxX: coordX + sizeX / 2,
+	minY: coordY - sizeY / 2,
+	maxY: coordY + sizeY / 2};
+	drawMandelbrot();
+}
+
+window.onload = function() {
+	canvas = document.querySelector("#canvas");
+	ctx = canvas.getContext("2d");
+	drawMandelbrot();
+	canvas.addEventListener("click", function(e) { zoom(e.offsetX, e.offsetY) });
+}
+</script>
+</head>
+<body>
+<canvas id="canvas" height=501 width=501>
+</body>
+</html>
