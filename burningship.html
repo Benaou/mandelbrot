@@ -1,0 +1,61 @@
+<html>
+<head>
+<script type="text/javascript">
+var windowSize = {minX: -1.8, maxX: -1.7, minY: -0.01, maxY: 0.051};
+var maxIter = 75;
+var canvas;
+var ctx;
+
+function drawBurningShip() {
+	let coordX, coordY, real, imag, iter;
+	for(let j=0; j<canvas.width; j++) {
+		for(let i=0; i<canvas.width; i++) {
+			coordX = windowSize.minX + (i/canvas.width)*(windowSize.maxX - windowSize.minX);
+			coordY = windowSize.maxY - (j/canvas.height)*(windowSize.maxY - windowSize.minY);
+			coordY = -coordY; // mirror on Y axis to make it look cool
+			//real = (x,y) => x*x-y*y+coordX; //Re(z^2+c)
+			//imag = (x,y) => 2*x*y+coordY; //Im(z^2+c)
+			real = (x,y) => x*x-y*y+coordX; //real z_n=(|Re(z)|+i|Im(z)|)^2+c
+			imag = (x,y) => 2*Math.abs(x)*Math.abs(y)+coordY; //imag part of z_n
+			iter = 0;
+			[iterX, iterY] = [0, 0];
+			
+			while(Math.pow(real(iterX,iterY),2) + Math.pow(imag(iterX,iterY),2) <= 4 && iter < maxIter) {
+				[iterX, iterY] = [real(iterX,iterY), imag(iterX,iterY)];
+				iter++;
+			}
+			ctx.fillStyle = iter==maxIter ? "#000000" : "#" + "00" + (100-Math.floor(100*iter/maxIter)) + "00";
+			ctx.fillRect(i,j,1,1);
+		}
+	}
+}
+
+function zoom(x, y, magn = 2) {
+	let coordX = windowSize.minX + (x/canvas.width)*(windowSize.maxX - windowSize.minX);
+	let coordY = windowSize.maxY - (y/canvas.height)*(windowSize.maxY - windowSize.minY);
+
+	let sizeX = (windowSize.maxX - windowSize.minX) / magn;
+	let sizeY = (windowSize.maxY - windowSize.minY) / magn;
+	
+	windowSize = {minX: coordX - sizeX / 2,
+	maxX: coordX + sizeX / 2,
+	minY: coordY - sizeY / 2,
+	maxY: coordY + sizeY / 2};
+	drawBurningShip();
+}
+
+window.onload = function() {
+	canvas = document.querySelector("#canvas");
+	ctx = canvas.getContext("2d");
+	drawBurningShip();
+	canvas.addEventListener("click", function(e) { zoom(e.offsetX, e.offsetY) });
+}
+</script>
+</head>
+<body>
+<!--<input type="submit" onclick="maxIter=parseInt(document.getElementById('maxIter').value); drawBurningShip();"></input>
+<input type="text" id="maxIter"></input>
+<br>-->
+<canvas id="canvas" height=501 width=501>
+</body>
+</html>
