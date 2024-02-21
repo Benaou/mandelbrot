@@ -1,10 +1,35 @@
 <html>
 <head>
 <script type="text/javascript">
-var windowSize = {minX: -1.8, maxX: -1.7, minY: -0.01, maxY: 0.051};
-var maxIter = 75;
+var windowSize = {minX: -1.8, maxX: -1.7, minY: -0.005, maxY: 0.08};
+var maxIter = 64;
+var defaultMagn = 2;
 var canvas;
 var ctx;
+
+//Check this out #-1.8112247195692703#-1.69305889517302#-0.018617316948821024#0.08182363378798915#64#0.99#951#951
+function loadGlobalVariables() {
+	params = window.location.hash.split('#')
+	windowSize.minX = parseFloat(params[1]);
+	windowSize.maxX = parseFloat(params[2]);
+	windowSize.minY = parseFloat(params[3]);
+	windowSize.maxY = parseFloat(params[4]);
+	maxIter = parseInt(params[5]);
+	defaultMagn = parseFloat(params[6]);
+	canvas.height = parseInt(params[7]);
+	canvas.width = parseInt(params[8]);
+}
+
+function setGlobalVariables() {
+	window.location.hash = "#" + windowSize.minX + "#" + 
+		windowSize.maxX + "#" +
+		windowSize.minY + "#" +
+		windowSize.maxY + "#" +
+		maxIter + "#" +
+		defaultMagn + "#" +
+		canvas.height + "#" +
+		canvas.width;
+}
 
 function drawBurningShip() {
 	let coordX, coordY, real, imag, iter;
@@ -41,21 +66,25 @@ function zoom(x, y, magn = 2) {
 	maxX: coordX + sizeX / 2,
 	minY: coordY - sizeY / 2,
 	maxY: coordY + sizeY / 2};
+	setGlobalVariables();
 	drawBurningShip();
 }
 
 window.onload = function() {
 	canvas = document.querySelector("#canvas");
 	ctx = canvas.getContext("2d");
+	if(window.location.hash) {
+		loadGlobalVariables();
+	} else {
+		setGlobalVariables();
+	};
 	drawBurningShip();
-	canvas.addEventListener("click", function(e) { zoom(e.offsetX, e.offsetY) });
+	canvas.addEventListener("click", function(e) { zoom(e.offsetX, e.offsetY, defaultMagn) });
+	window.addEventListener("hashchange", function(e) { console.log(e); window.location.hash = e.target.location.hash; loadGlobalVariables(); drawBurningShip();});
 }
 </script>
 </head>
 <body>
-<!--<input type="submit" onclick="maxIter=parseInt(document.getElementById('maxIter').value); drawBurningShip();"></input>
-<input type="text" id="maxIter"></input>
-<br>-->
 <canvas id="canvas" height=501 width=501>
 </body>
 </html>
